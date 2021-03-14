@@ -1,0 +1,8 @@
+В ОС Linux по cron прописать запуск файлов
+crontab -e
+
+#~ Периодический пинг устройств сети
+  * *  *   *   *     sleep 30 && nice -n 19 /home/user/ping_equipment/take_ping.sh   &
+  * *  *   *   *     sleep 40 && nice -n 19 /home/user/ping_equipment/msite_ping.sh  &
+  * *  *   *   *     sleep 8  && nice -n 19 /home/user/take_temp/take_temp.sh        &
+  * *  *   *   *     sleep 17 && nice -n 19 /home/user/take_temp/take_day.sh         &

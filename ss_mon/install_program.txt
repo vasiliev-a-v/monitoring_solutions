@@ -1,0 +1,17 @@
+Программу необходимо вставить в systemd
+
+sudo nano /etc/systemd/system/msite_svg.service 
+---
+Description=msite_svg
+After=network.target
+
+[Service]
+ExecStart=/bin/bash "/home/user/ss_mon/msite_svg.sh"
+WorkingDirectory=/home/user/ss_mon/
+Type=simple
+User=user
+Group=user
+
+[Install]
+WantedBy=multi-user.target
+---EOF---

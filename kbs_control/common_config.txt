@@ -1,0 +1,9 @@
+pause_file=/tmp/kbsc_pause_$ks
+reload_file=/tmp/kbsc_reload_$ks
+just_look_file=/tmp/kbsc_just_look_$ks
+
+process_log="$MY_DIR/$ks/process_log.txt"		#~ файл журнала процессов
+error_log="$MY_DIR/$ks/error_log.txt"			#~ файл журнала ошибок
+
+user_log=пользователь
+password=пароль
