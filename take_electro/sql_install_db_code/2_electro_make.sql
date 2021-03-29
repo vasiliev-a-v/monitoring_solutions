@@ -65,6 +65,18 @@ CREATE TABLE temp_changes               -- Журнал фиксации изм�
   time      timestamp  NOT NULL,        -- Время
   temp_sys  integer    NOT NULL,        -- Температура системы
   temp_akb  integer    NOT NULL,        -- Температура АКБ
+  FOREIGN KEY  ( location )             -- из этой таблицы данные
+    REFERENCES locations( location )    -- больше месяца удаляются функцией
+    ON DELETE CASCADE                   -- remove_old_inserts()
+    ON UPDATE CASCADE                   -- для старых данных есть таблица архив
+);
+
+
+CREATE TABLE public.temp_changes_archive (  -- архив фиксации изменений
+  location  text      NOT NULL,
+  "time"    timestamp without time zone NOT NULL,
+  temp_sys  integer   NOT NULL,
+  temp_akb  integer   NOT NULL,
   FOREIGN KEY  ( location )
     REFERENCES locations( location )
     ON DELETE CASCADE
