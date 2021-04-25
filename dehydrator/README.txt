@@ -20,9 +20,11 @@ config.sh - файл с общими конфигурационными пере
 
 website_dehydrator.sh - генерирует веб-страницу с показаниями дегидратора. Куда сохранять файл настраивается переменной html_file в файле config.sh
 
+dehydrator.sql - дамп схемы базы данных dehydrator, которую необходимо установить в БД PostgreSQL
+
 Автор: Васильев Антон
 
 ---
 
 Деплой:
-- модули take_dehydrator.sh и website_dehydrator.sh запускаются периодически через cron.
+- модули take_dehydrator.sh и website_dehydrator.sh запускаются периодически через cron на сервере приложений.
