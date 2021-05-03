@@ -1,8 +1,7 @@
---
--- PostgreSQL database dump
---
+/* База данных PostgreSQL для дегидратора */
 
-CREATE FUNCTION public.add_average_in_operating_time() RETURNS trigger
+
+CREATE FUNCTION add_average_in_operating_time() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
@@ -19,13 +18,7 @@ END;
 $$;
 
 
-ALTER FUNCTION public.add_average_in_operating_time() OWNER TO "user";
-
---
--- Name: add_new_changes(); Type: FUNCTION; Schema: public; Owner: user
---
-
-CREATE FUNCTION public.add_new_changes() RETURNS trigger
+CREATE FUNCTION add_new_changes() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
@@ -107,13 +100,7 @@ END;
 $$;
 
 
-ALTER FUNCTION public.add_new_changes() OWNER TO "user";
-
---
--- Name: add_new_operating_time(); Type: FUNCTION; Schema: public; Owner: user
---
-
-CREATE FUNCTION public.add_new_operating_time() RETURNS trigger
+CREATE FUNCTION add_new_operating_time() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
@@ -135,13 +122,7 @@ END;
 $$;
 
 
-ALTER FUNCTION public.add_new_operating_time() OWNER TO "user";
-
---
--- Name: remove_old_inserts(); Type: FUNCTION; Schema: public; Owner: user
---
-
-CREATE FUNCTION public.remove_old_inserts() RETURNS trigger
+CREATE FUNCTION remove_old_inserts() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
@@ -152,17 +133,7 @@ END;
 $$;
 
 
-ALTER FUNCTION public.remove_old_inserts() OWNER TO "user";
-
-SET default_tablespace = '';
-
-SET default_with_oids = false;
-
---
--- Name: dehydrator_changes; Type: TABLE; Schema: public; Owner: user
---
-
-CREATE TABLE public.dehydrator_changes (
+CREATE TABLE dehydrator_changes (
     c_life smallint,
     c_temp smallint,
     c_high smallint,
@@ -179,13 +150,7 @@ CREATE TABLE public.dehydrator_changes (
 );
 
 
-ALTER TABLE public.dehydrator_changes OWNER TO "user";
-
---
--- Name: dehydrator_changes_archive; Type: TABLE; Schema: public; Owner: user
---
-
-CREATE TABLE public.dehydrator_changes_archive (
+CREATE TABLE dehydrator_changes_archive (
     c_life smallint,
     c_temp smallint,
     c_high smallint,
@@ -200,16 +165,10 @@ CREATE TABLE public.dehydrator_changes_archive (
     a_humi boolean DEFAULT false,
     a_faul boolean DEFAULT false
 )
-WITH (autovacuum_freeze_min_age='0');  -- сразу замораживается
+WITH (autovacuum_freeze_min_age='0');  -- архив сразу замораживается
 
 
-ALTER TABLE public.dehydrator_changes_archive OWNER TO "user";
-
---
--- Name: dehydrator_current; Type: TABLE; Schema: public; Owner: user
---
-
-CREATE TABLE public.dehydrator_current (
+CREATE TABLE dehydrator_current (
     c_life smallint,
     c_temp smallint,
     c_high smallint,
@@ -230,27 +189,22 @@ CREATE TABLE public.dehydrator_current (
 );
 
 
-ALTER TABLE public.dehydrator_current OWNER TO "user";
 
---
--- Name: operating_time; Type: VIEW; Schema: public; Owner: user
---
-
-CREATE VIEW public.operating_time AS
+CREATE VIEW operating_time AS
  WITH last_c_life AS (
          SELECT dehydrator_changes.c_life,
             dehydrator_changes."time"
-           FROM public.dehydrator_changes
+           FROM dehydrator_changes
           WHERE (dehydrator_changes.c_life = ( SELECT dehydrator_current.c_life
-                   FROM public.dehydrator_current))
+                   FROM dehydrator_current))
           ORDER BY dehydrator_changes."time"
          LIMIT 1
         ), last_but_one AS (
          SELECT dehydrator_changes.c_life,
             dehydrator_changes."time"
-           FROM public.dehydrator_changes
+           FROM dehydrator_changes
           WHERE (dehydrator_changes.c_life = (( SELECT dehydrator_current.c_life
-                   FROM public.dehydrator_current) - 1))
+                   FROM dehydrator_current) - 1))
           ORDER BY dehydrator_changes."time"
          LIMIT 1
         )
@@ -263,13 +217,7 @@ CREATE VIEW public.operating_time AS
     last_but_one l2;
 
 
-ALTER TABLE public.operating_time OWNER TO "user";
-
---
--- Name: dehydrator_v; Type: VIEW; Schema: public; Owner: user
---
-
-CREATE VIEW public.dehydrator_v AS
+CREATE VIEW dehydrator_v AS
  SELECT dehydrator_current.c_life,
     dehydrator_current.c_temp,
     dehydrator_current.c_high,
@@ -284,30 +232,18 @@ CREATE VIEW public.dehydrator_v AS
     dehydrator_current.a_faul,
     dehydrator_current.ip,
     operating_time.average
-   FROM public.dehydrator_current,
-    public.operating_time;
+   FROM dehydrator_current,
+    operating_time;
 
 
-ALTER TABLE public.dehydrator_v OWNER TO "user";
-
---
--- Name: locations; Type: TABLE; Schema: public; Owner: user
---
-
-CREATE TABLE public.locations (
+CREATE TABLE locations (
     ip inet NOT NULL,
     location text NOT NULL,
     own text NOT NULL
 );
 
 
-ALTER TABLE public.locations OWNER TO "user";
-
---
--- Name: operating_time_archive; Type: TABLE; Schema: public; Owner: user
---
-
-CREATE TABLE public.operating_time_archive (
+CREATE TABLE operating_time_archive (
     average smallint,
     c_life smallint,
     ip inet NOT NULL,
@@ -315,100 +251,32 @@ CREATE TABLE public.operating_time_archive (
 );
 
 
-ALTER TABLE public.operating_time_archive OWNER TO "user";
-
---
--- Name: dehydrator_current dehydrator_current_ip_key; Type: CONSTRAINT; Schema: public; Owner: user
---
-
-ALTER TABLE ONLY public.dehydrator_current
+ALTER TABLE ONLY dehydrator_current
     ADD CONSTRAINT dehydrator_current_ip_key UNIQUE (ip);
 
-
---
--- Name: locations loc_ip_idx; Type: CONSTRAINT; Schema: public; Owner: user
---
-
-ALTER TABLE ONLY public.locations
+ALTER TABLE ONLY locations
     ADD CONSTRAINT loc_ip_idx PRIMARY KEY (ip);
 
-
---
--- Name: locations locations_location_key; Type: CONSTRAINT; Schema: public; Owner: user
---
-
-ALTER TABLE ONLY public.locations
+ALTER TABLE ONLY locations
     ADD CONSTRAINT locations_location_key UNIQUE (location);
 
 
---
--- Name: dehydrator_changes_time_idx; Type: INDEX; Schema: public; Owner: user
---
+CREATE INDEX dehydrator_changes_time_idx ON dehydrator_changes USING btree ("time");
 
-CREATE INDEX dehydrator_changes_time_idx ON public.dehydrator_changes USING btree ("time");
+CREATE TRIGGER trig_if_c_life_changes AFTER UPDATE ON dehydrator_current FOR EACH ROW EXECUTE PROCEDURE add_new_operating_time();
+CREATE TRIGGER trig_if_changes AFTER UPDATE ON dehydrator_current FOR EACH ROW EXECUTE PROCEDURE add_new_changes();
+CREATE TRIGGER trig_if_insert AFTER INSERT ON dehydrator_changes FOR EACH STATEMENT EXECUTE PROCEDURE remove_old_inserts();
+CREATE TRIGGER trig_if_insert_into_operating_time AFTER INSERT ON operating_time_archive FOR EACH ROW EXECUTE PROCEDURE add_average_in_operating_time();
 
+ALTER TABLE ONLY dehydrator_changes_archive
+    ADD CONSTRAINT dehydrator_changes_archive_ip_fkey FOREIGN KEY (ip) REFERENCES locations(ip) ON UPDATE CASCADE;
 
---
--- Name: dehydrator_current trig_if_c_life_changes; Type: TRIGGER; Schema: public; Owner: user
---
+ALTER TABLE ONLY dehydrator_changes
+    ADD CONSTRAINT dehydrator_changes_ip_fkey FOREIGN KEY (ip) REFERENCES locations(ip) ON UPDATE CASCADE;
 
-CREATE TRIGGER trig_if_c_life_changes AFTER UPDATE ON public.dehydrator_current FOR EACH ROW EXECUTE PROCEDURE public.add_new_operating_time();
+ALTER TABLE ONLY dehydrator_current
+    ADD CONSTRAINT dehydrator_current_ip_fkey FOREIGN KEY (ip) REFERENCES locations(ip) ON UPDATE CASCADE;
 
-
---
--- Name: dehydrator_current trig_if_changes; Type: TRIGGER; Schema: public; Owner: user
---
-
-CREATE TRIGGER trig_if_changes AFTER UPDATE ON public.dehydrator_current FOR EACH ROW EXECUTE PROCEDURE public.add_new_changes();
-
-
---
--- Name: dehydrator_changes trig_if_insert; Type: TRIGGER; Schema: public; Owner: user
---
-
-CREATE TRIGGER trig_if_insert AFTER INSERT ON public.dehydrator_changes FOR EACH STATEMENT EXECUTE PROCEDURE public.remove_old_inserts();
-
-
---
--- Name: operating_time_archive trig_if_insert_into_operating_time; Type: TRIGGER; Schema: public; Owner: user
---
-
-CREATE TRIGGER trig_if_insert_into_operating_time AFTER INSERT ON public.operating_time_archive FOR EACH ROW EXECUTE PROCEDURE public.add_average_in_operating_time();
-
-
---
--- Name: dehydrator_changes_archive dehydrator_changes_archive_ip_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
---
-
-ALTER TABLE ONLY public.dehydrator_changes_archive
-    ADD CONSTRAINT dehydrator_changes_archive_ip_fkey FOREIGN KEY (ip) REFERENCES public.locations(ip) ON UPDATE CASCADE;
-
-
---
--- Name: dehydrator_changes dehydrator_changes_ip_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
---
-
-ALTER TABLE ONLY public.dehydrator_changes
-    ADD CONSTRAINT dehydrator_changes_ip_fkey FOREIGN KEY (ip) REFERENCES public.locations(ip) ON UPDATE CASCADE;
-
-
---
--- Name: dehydrator_current dehydrator_current_ip_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
---
-
-ALTER TABLE ONLY public.dehydrator_current
-    ADD CONSTRAINT dehydrator_current_ip_fkey FOREIGN KEY (ip) REFERENCES public.locations(ip) ON UPDATE CASCADE;
-
-
---
--- Name: operating_time_archive operating_time_archive_ip_fkey; Type: FK CONSTRAINT; Schema: public; Owner: user
---
-
-ALTER TABLE ONLY public.operating_time_archive
-    ADD CONSTRAINT operating_time_archive_ip_fkey FOREIGN KEY (ip) REFERENCES public.locations(ip) ON UPDATE CASCADE;
-
-
---
--- PostgreSQL database dump complete
---
+ALTER TABLE ONLY operating_time_archive
+    ADD CONSTRAINT operating_time_archive_ip_fkey FOREIGN KEY (ip) REFERENCES locations(ip) ON UPDATE CASCADE;
 
