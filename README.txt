@@ -13,8 +13,6 @@
 Небольшие программы на Си, предназначенные для обучения программированию:
 https://github.com/vasiliev-a-v/c_programming_education
 
-Несколько утилит и программ на языке C (GTK) и bash:
+Несколько программ и утилит на языках C (GTK), Javascript и bash:
 https://github.com/vasiliev-a-v/different
 
-Пара утилит и консольная игра:
-https://github.com/vasiliev-a-v/sysadmin_utils
